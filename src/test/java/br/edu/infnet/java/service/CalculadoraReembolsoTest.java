@@ -1,5 +1,6 @@
 package br.edu.infnet.java.service;
 
+import br.edu.infnet.java.model.Paciente;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,6 +64,17 @@ public class CalculadoraReembolsoTest {
         double valorEsperado = 0.0;
 
         double resultado = calculadora.calcular(valorConsulta, percentualCobertura);
+
+        assertEquals(valorEsperado, resultado, 0.001);
+    }
+    @Test
+    public void deveCalcularReembolsoComPacienteDummy() {
+        double valorConsulta = 200;
+        double percentualCobertura = 0.7;
+        double valorEsperado = 140;
+        Paciente pacienteDummy = new Paciente();  // Dummy sem lógica
+
+        double resultado = calculadora.calcular(valorConsulta, percentualCobertura, pacienteDummy);
 
         assertEquals(valorEsperado, resultado, 0.001);
     }
