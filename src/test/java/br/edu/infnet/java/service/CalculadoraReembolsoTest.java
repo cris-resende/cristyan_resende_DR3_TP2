@@ -26,11 +26,13 @@ public class CalculadoraReembolsoTest {
         autorizadorMock = mock(AutorizadorReembolso.class);
         calculadora = new CalculadoraReembolso(historicoConsultas, auditoriaSpy, autorizadorMock);
     }
-    private boolean compararComMargem(double valorEsperado, double valorObtido){
+
+    private boolean compararComMargem(double valorEsperado, double valorObtido) {
         double margemErro = 0.01;
         return Math.abs(valorEsperado - valorObtido) <= margemErro;
     }
-    //Automatizando a criação do objeto consulta
+
+    // Automatizando a criação do objeto consulta
     private Consulta criarConsulta(String nomePaciente, double valor) {
         Paciente paciente = new Paciente(nomePaciente);
         return new Consulta(valor, LocalDateTime.now(), paciente, "Consulta de " + nomePaciente);
@@ -181,5 +183,25 @@ public class CalculadoraReembolsoTest {
         assertEquals(1, consultas.size());
         assertEquals("Felipe", consultas.get(0).getPaciente().getNome());
         assertEquals(150, consultas.get(0).getValor());
+    }
+
+    // --- Novos testes para validar teto de R$150 no reembolso ---
+
+    @Test
+    public void deveAplicarTetoDeReembolsoQuandoValorExcederLimite() {
+        when(autorizadorMock.autorizar(any())).thenReturn(true);
+
+        // Valor calculado: 200 * 0.9 = 180 > 150 (teto)
+        double valorReembolso = calculadora.calcular(200, 0.9);
+        assertTrue(compararComMargem(150, valorReembolso), "Reembolso deve ser limitado a R$150");
+    }
+
+    @Test
+    public void devePermitirValorReembolsoAbaixoDoTeto() {
+        when(autorizadorMock.autorizar(any())).thenReturn(true);
+
+        // Valor calculado: 100 * 0.7 = 70 < 150 (teto)
+        double valorReembolso = calculadora.calcular(100, 0.7);
+        assertTrue(compararComMargem(70, valorReembolso), "Reembolso abaixo do teto deve ser permitido sem alteração");
     }
 }
