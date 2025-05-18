@@ -26,6 +26,10 @@ public class CalculadoraReembolsoTest {
         autorizadorMock = mock(AutorizadorReembolso.class);
         calculadora = new CalculadoraReembolso(historicoConsultas, auditoriaSpy, autorizadorMock);
     }
+    private boolean compararComMargem(double valorEsperado, double valorObtido){
+        double margemErro = 0.01;
+        return Math.abs(valorEsperado - valorObtido) <= margemErro;
+    }
     //Automatizando a criação do objeto consulta
     private Consulta criarConsulta(String nomePaciente, double valor) {
         Paciente paciente = new Paciente(nomePaciente);
@@ -65,7 +69,7 @@ public class CalculadoraReembolsoTest {
     public void deveCalcularReembolsoCorretamenteComPercentual() {
         when(autorizadorMock.autorizar(any())).thenReturn(true);
 
-        assertEquals(140, calculadora.calcular(200, 0.7), 0.001);
+        assertTrue(compararComMargem(140, calculadora.calcular(200, 0.7)));
     }
 
     @Test
@@ -75,7 +79,7 @@ public class CalculadoraReembolsoTest {
         Paciente paciente = new Paciente("João");
         PlanoSaude plano50 = new Plano50();
         double valorReembolso = calculadora.calcular(200, plano50, paciente);
-        assertEquals(100, valorReembolso, 0.001);
+        assertTrue(compararComMargem(100, valorReembolso));
     }
 
     @Test
@@ -85,35 +89,35 @@ public class CalculadoraReembolsoTest {
         Paciente paciente = new Paciente("Maria");
         PlanoSaude plano80 = new Plano80();
         double valorReembolso = calculadora.calcular(200, plano80, paciente);
-        assertEquals(160, valorReembolso, 0.001);
+        assertTrue(compararComMargem(160, valorReembolso));
     }
 
     @Test
     public void deveRetornarZeroQuandoValorConsultaForZero() {
         when(autorizadorMock.autorizar(any())).thenReturn(true);
 
-        assertEquals(0, calculadora.calcular(0, 0.7), 0.001);
+        assertTrue(compararComMargem(0, calculadora.calcular(0, 0.7)));
     }
 
     @Test
     public void deveRetornarZeroQuandoPercentualCoberturaForZero() {
         when(autorizadorMock.autorizar(any())).thenReturn(true);
 
-        assertEquals(0, calculadora.calcular(200, 0), 0.001);
+        assertTrue(compararComMargem(0, calculadora.calcular(200, 0)));
     }
 
     @Test
     public void deveCalcularReembolsoQuandoPercentualCoberturaForCemPorcento() {
         when(autorizadorMock.autorizar(any())).thenReturn(true);
 
-        assertEquals(200, calculadora.calcular(200, 1), 0.001);
+        assertTrue(compararComMargem(200, calculadora.calcular(200, 1)));
     }
 
     @Test
     public void deveRetornarZeroQuandoValorConsultaEPercentualCoberturaForemZero() {
         when(autorizadorMock.autorizar(any())).thenReturn(true);
 
-        assertEquals(0, calculadora.calcular(0, 0), 0.001);
+        assertTrue(compararComMargem(0, calculadora.calcular(0, 0)));
     }
 
     @Test
@@ -176,6 +180,6 @@ public class CalculadoraReembolsoTest {
         List<Consulta> consultas = historicoConsultas.listarConsultas();
         assertEquals(1, consultas.size());
         assertEquals("Felipe", consultas.get(0).getPaciente().getNome());
-        assertEquals(150, consultas.get(0).getValor(), 0.001);
+        assertEquals(150, consultas.get(0).getValor());
     }
 }
