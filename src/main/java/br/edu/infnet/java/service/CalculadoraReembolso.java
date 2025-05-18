@@ -7,18 +7,21 @@ import java.time.LocalDateTime;
 public class CalculadoraReembolso {
 
     private final HistoricoConsultas historicoConsultas;
+    private final Auditoria auditoria;
 
-    // Construtor com injeção de dependência para o histórico
+    // Construtor com injeção de dependência para histórico e auditoria
+    public CalculadoraReembolso(HistoricoConsultas historicoConsultas, Auditoria auditoria) {
+        this.historicoConsultas = historicoConsultas;
+        this.auditoria = auditoria;
+    }
+
+    // Construtor somente com histórico (sem auditoria)
     public CalculadoraReembolso(HistoricoConsultas historicoConsultas) {
         this.historicoConsultas = historicoConsultas;
+        this.auditoria = null;
     }
 
-    // Construtor sem histórico (para cenários onde o registro não é necessário)
-    public CalculadoraReembolso() {
-        this.historicoConsultas = null;
-    }
-
-    // Método de cálculo usando um plano de saúde
+    // Método de cálculo usando um plano de saúde e paciente
     public double calcular(double valorConsulta, PlanoSaude planoSaude, Paciente paciente) {
         return calcular(valorConsulta, planoSaude.getPercentualCobertura(), paciente);
     }
@@ -27,11 +30,16 @@ public class CalculadoraReembolso {
     public double calcular(double valorConsulta, double percentualCobertura, Paciente paciente) {
         double valorReembolso = valorConsulta * percentualCobertura;
 
-        // Registrar a consulta no histórico se ele estiver disponível
+        // Registrar a consulta no histórico se disponível
         if (historicoConsultas != null) {
             Consulta consulta = new Consulta(valorConsulta, LocalDateTime.now(), paciente,
                     "Consulta de " + paciente.getNome());
             historicoConsultas.salvarConsulta(consulta);
+
+            // Registrar a auditoria se disponível
+            if (auditoria != null) {
+                auditoria.registrarConsulta(String.valueOf(consulta));
+            }
         }
 
         return valorReembolso;

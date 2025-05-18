@@ -8,16 +8,30 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 public class CalculadoraReembolsoTest {
 
     private CalculadoraReembolso calculadora;
     private HistoricoConsultasFake historicoConsultas;
+    private AuditoriaSpy auditoriaSpy;
 
     @BeforeEach
     public void setup() {
         historicoConsultas = new HistoricoConsultasFake();
-        calculadora = new CalculadoraReembolso(historicoConsultas);
+        auditoriaSpy = new AuditoriaSpy();
+        calculadora = new CalculadoraReembolso(historicoConsultas, auditoriaSpy);
+    }
+    @Test
+    public void deveChamarAuditoriaAoRegistrarConsulta() {
+        Paciente paciente = new Paciente("Carlos");
+        calculadora.calcular(100, 0.5, paciente);
+        assertTrue(auditoriaSpy.foiChamado(), "A auditoria não foi chamada conforme esperado.");
+    }
+
+    @Test
+    public void naoDeveChamarAuditoriaSeConsultaNaoForRegistrada() {
+        assertFalse(auditoriaSpy.foiChamado());
     }
 
     @Test
