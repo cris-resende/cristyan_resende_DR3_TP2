@@ -26,6 +26,7 @@ public class CalculadoraReembolsoTest {
         autorizadorMock = mock(AutorizadorReembolso.class);
         calculadora = new CalculadoraReembolso(historicoConsultas, auditoriaSpy, autorizadorMock);
     }
+    //Automatizando a criação do objeto consulta
     private Consulta criarConsulta(String nomePaciente, double valor) {
         Paciente paciente = new Paciente(nomePaciente);
         return new Consulta(valor, LocalDateTime.now(), paciente, "Consulta de " + nomePaciente);
