@@ -17,11 +17,6 @@ public class CalculadoraReembolso {
         this.autorizador = autorizador;
     }
 
-    // Construtor simplificado (apenas histórico), útil para cenários sem auditoria e autorização
-    public CalculadoraReembolso(HistoricoConsultas historicoConsultas) {
-        this(historicoConsultas, null, null);
-    }
-
     // Método para calcular reembolso usando um plano de saúde e paciente
     public double calcular(double valorConsulta, PlanoSaude planoSaude, Paciente paciente) {
         return calcular(valorConsulta, planoSaude.getPercentualCobertura(), paciente);
@@ -38,15 +33,18 @@ public class CalculadoraReembolso {
         }
 
         double valorReembolso = valorConsulta * percentualCobertura;
+        // Aplica o teto de R$150 no valor do reembolso
+        if (valorReembolso > 150) {
+            valorReembolso = 150;
+        }
 
         // Salva consulta no histórico se o histórico estiver presente
         if (historicoConsultas != null) {
             historicoConsultas.salvarConsulta(consulta);
-
-            // Registra auditoria se disponível
-            if (auditoria != null) {
-                auditoria.registrarConsulta(consulta.toString());
-            }
+        }
+        // Registra auditoria se disponível
+        if (auditoria != null) {
+            auditoria.registrarConsulta(consulta.toString());
         }
 
         return valorReembolso;
@@ -54,6 +52,11 @@ public class CalculadoraReembolso {
 
     // Método de cálculo sem paciente (sem histórico e auditoria)
     public double calcular(double valorConsulta, double percentualCobertura) {
-        return valorConsulta * percentualCobertura;
+        double valorReembolso = valorConsulta * percentualCobertura;
+        // Aplica o teto de R$150 no valor do reembolso
+        if (valorReembolso > 150) {
+            valorReembolso = 150;
+        }
+        return valorReembolso;
     }
 }
