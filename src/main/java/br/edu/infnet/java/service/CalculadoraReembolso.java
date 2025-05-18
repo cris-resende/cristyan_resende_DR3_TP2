@@ -4,11 +4,6 @@ import br.edu.infnet.java.model.Paciente;
 import br.edu.infnet.java.model.Consulta;
 import java.time.LocalDateTime;
 
-/**
- * Classe responsável por encapsular a lógica do cálculo do reembolso.
- * Mantém a lógica isolada para facilitar testes unitários específicos.
- * Agora utiliza um histórico para armazenar as consultas realizadas.
- */
 public class CalculadoraReembolso {
 
     private final HistoricoConsultas historicoConsultas;
@@ -17,29 +12,32 @@ public class CalculadoraReembolso {
     public CalculadoraReembolso(HistoricoConsultas historicoConsultas) {
         this.historicoConsultas = historicoConsultas;
     }
+
+    // Construtor sem histórico (para cenários onde o registro não é necessário)
     public CalculadoraReembolso() {
         this.historicoConsultas = null;
     }
 
-    /**
-     * Calcula o valor do reembolso com base no valor da consulta e percentual de cobertura.
-     * O paciente e a consulta são registrados no histórico.
-     */
+    // Método de cálculo usando um plano de saúde
+    public double calcular(double valorConsulta, PlanoSaude planoSaude, Paciente paciente) {
+        return calcular(valorConsulta, planoSaude.getPercentualCobertura(), paciente);
+    }
+
+    // Método de cálculo usando percentual direto e paciente
     public double calcular(double valorConsulta, double percentualCobertura, Paciente paciente) {
         double valorReembolso = valorConsulta * percentualCobertura;
 
-        // Criar uma consulta para registrar no histórico
+        // Registrar a consulta no histórico se ele estiver disponível
         if (historicoConsultas != null) {
-            Consulta consulta = new Consulta(valorConsulta, LocalDateTime.now(), paciente, "Consulta de " + paciente.getNome());
+            Consulta consulta = new Consulta(valorConsulta, LocalDateTime.now(), paciente,
+                    "Consulta de " + paciente.getNome());
             historicoConsultas.salvarConsulta(consulta);
         }
 
         return valorReembolso;
     }
 
-    /**
-     * Sobrecarga para cálculo sem registro no histórico (caso o histórico não seja necessário).
-     */
+    // Método de cálculo sem paciente (sem registro no histórico)
     public double calcular(double valorConsulta, double percentualCobertura) {
         return valorConsulta * percentualCobertura;
     }

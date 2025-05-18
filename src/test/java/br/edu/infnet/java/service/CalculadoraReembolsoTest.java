@@ -21,8 +21,24 @@ public class CalculadoraReembolsoTest {
     }
 
     @Test
-    public void deveCalcularReembolsoCorretamente() {
+    public void deveCalcularReembolsoCorretamenteComPercentual() {
         assertEquals(140, calculadora.calcular(200, 0.7), 0.001);
+    }
+
+    @Test
+    public void deveCalcularReembolsoCorretamenteComPlano50() {
+        Paciente paciente = new Paciente("João");
+        PlanoSaude plano50 = new Plano50();
+        double valorReembolso = calculadora.calcular(200, plano50, paciente);
+        assertEquals(100, valorReembolso, 0.001);
+    }
+
+    @Test
+    public void deveCalcularReembolsoCorretamenteComPlano80() {
+        Paciente paciente = new Paciente("Maria");
+        PlanoSaude plano80 = new Plano80();
+        double valorReembolso = calculadora.calcular(200, plano80, paciente);
+        assertEquals(160, valorReembolso, 0.001);
     }
 
     @Test
@@ -51,6 +67,30 @@ public class CalculadoraReembolsoTest {
         calculadora.calcular(200, 0.7, new Paciente("Maria"));
         List<Consulta> consultas = historicoConsultas.listarConsultas();
         assertEquals(2, consultas.size());
+        assertEquals("João", consultas.get(0).getPaciente().getNome());
+        assertEquals("Maria", consultas.get(1).getPaciente().getNome());
+    }
+
+    @Test
+    public void deveRegistrarConsultaComPlano50() {
+        Paciente paciente = new Paciente("Lucas");
+        PlanoSaude plano50 = new Plano50();
+        calculadora.calcular(100, plano50, paciente);
+
+        List<Consulta> consultas = historicoConsultas.listarConsultas();
+        assertEquals(1, consultas.size());
+        assertEquals("Lucas", consultas.get(0).getPaciente().getNome());
+    }
+
+    @Test
+    public void deveRegistrarConsultaComPlano80() {
+        Paciente paciente = new Paciente("Carla");
+        PlanoSaude plano80 = new Plano80();
+        calculadora.calcular(200, plano80, paciente);
+
+        List<Consulta> consultas = historicoConsultas.listarConsultas();
+        assertEquals(1, consultas.size());
+        assertEquals("Carla", consultas.get(0).getPaciente().getNome());
     }
 
     @Test
@@ -63,5 +103,16 @@ public class CalculadoraReembolsoTest {
         Paciente paciente = new Paciente("Dummy");
         assertEquals("Dummy", paciente.getNome());
     }
-}
 
+    @Test
+    void deveRegistrarConsultaCorretamenteComPlano() {
+        Paciente paciente = new Paciente("Felipe");
+        PlanoSaude plano50 = new Plano50();
+        calculadora.calcular(150, plano50, paciente);
+
+        List<Consulta> consultas = historicoConsultas.listarConsultas();
+        assertEquals(1, consultas.size());
+        assertEquals("Felipe", consultas.get(0).getPaciente().getNome());
+        assertEquals(150, consultas.get(0).getValor(), 0.001);
+    }
+}
