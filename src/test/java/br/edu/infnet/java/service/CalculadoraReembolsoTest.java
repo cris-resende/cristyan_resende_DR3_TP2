@@ -2,9 +2,11 @@ package br.edu.infnet.java.service;
 
 import br.edu.infnet.java.model.Paciente;
 import br.edu.infnet.java.model.Consulta;
+import net.bytebuddy.asm.Advice;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,6 +25,10 @@ public class CalculadoraReembolsoTest {
         auditoriaSpy = new AuditoriaSpy();
         autorizadorMock = mock(AutorizadorReembolso.class);
         calculadora = new CalculadoraReembolso(historicoConsultas, auditoriaSpy, autorizadorMock);
+    }
+    private Consulta criarConsulta(String nomePaciente, double valor) {
+        Paciente paciente = new Paciente(nomePaciente);
+        return new Consulta(valor, LocalDateTime.now(), paciente, "Consulta de " + nomePaciente);
     }
 
     @Test
