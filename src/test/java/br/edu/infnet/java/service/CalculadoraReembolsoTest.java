@@ -15,17 +15,23 @@ public class CalculadoraReembolsoTest {
     private CalculadoraReembolso calculadora;
     private HistoricoConsultasFake historicoConsultas;
     private AuditoriaSpy auditoriaSpy;
+    private AutorizadorReembolso autorizadorMock;
 
     @BeforeEach
     public void setup() {
         historicoConsultas = new HistoricoConsultasFake();
         auditoriaSpy = new AuditoriaSpy();
-        calculadora = new CalculadoraReembolso(historicoConsultas, auditoriaSpy);
+        autorizadorMock = mock(AutorizadorReembolso.class);
+        calculadora = new CalculadoraReembolso(historicoConsultas, auditoriaSpy, autorizadorMock);
     }
+
     @Test
     public void deveChamarAuditoriaAoRegistrarConsulta() {
+        when(autorizadorMock.autorizar(any())).thenReturn(true);
+
         Paciente paciente = new Paciente("Carlos");
         calculadora.calcular(100, 0.5, paciente);
+
         assertTrue(auditoriaSpy.foiChamado(), "A auditoria não foi chamada conforme esperado.");
     }
 
@@ -35,12 +41,30 @@ public class CalculadoraReembolsoTest {
     }
 
     @Test
+    public void deveLancarExcecaoQuandoConsultaNaoAutorizada() {
+        when(autorizadorMock.autorizar(any())).thenReturn(false);
+
+        Paciente paciente = new Paciente("Paulo");
+
+        RuntimeException excecao = assertThrows(RuntimeException.class, () -> {
+            calculadora.calcular(200, 0.5, paciente);
+        });
+
+        assertEquals("Consulta não autorizada para reembolso.", excecao.getMessage());
+        verify(autorizadorMock, times(1)).autorizar(any());
+    }
+
+    @Test
     public void deveCalcularReembolsoCorretamenteComPercentual() {
+        when(autorizadorMock.autorizar(any())).thenReturn(true);
+
         assertEquals(140, calculadora.calcular(200, 0.7), 0.001);
     }
 
     @Test
     public void deveCalcularReembolsoCorretamenteComPlano50() {
+        when(autorizadorMock.autorizar(any())).thenReturn(true);
+
         Paciente paciente = new Paciente("João");
         PlanoSaude plano50 = new Plano50();
         double valorReembolso = calculadora.calcular(200, plano50, paciente);
@@ -49,6 +73,8 @@ public class CalculadoraReembolsoTest {
 
     @Test
     public void deveCalcularReembolsoCorretamenteComPlano80() {
+        when(autorizadorMock.autorizar(any())).thenReturn(true);
+
         Paciente paciente = new Paciente("Maria");
         PlanoSaude plano80 = new Plano80();
         double valorReembolso = calculadora.calcular(200, plano80, paciente);
@@ -57,26 +83,36 @@ public class CalculadoraReembolsoTest {
 
     @Test
     public void deveRetornarZeroQuandoValorConsultaForZero() {
+        when(autorizadorMock.autorizar(any())).thenReturn(true);
+
         assertEquals(0, calculadora.calcular(0, 0.7), 0.001);
     }
 
     @Test
     public void deveRetornarZeroQuandoPercentualCoberturaForZero() {
+        when(autorizadorMock.autorizar(any())).thenReturn(true);
+
         assertEquals(0, calculadora.calcular(200, 0), 0.001);
     }
 
     @Test
     public void deveCalcularReembolsoQuandoPercentualCoberturaForCemPorcento() {
+        when(autorizadorMock.autorizar(any())).thenReturn(true);
+
         assertEquals(200, calculadora.calcular(200, 1), 0.001);
     }
 
     @Test
     public void deveRetornarZeroQuandoValorConsultaEPercentualCoberturaForemZero() {
+        when(autorizadorMock.autorizar(any())).thenReturn(true);
+
         assertEquals(0, calculadora.calcular(0, 0), 0.001);
     }
 
     @Test
     void deveRegistrarMultiplasConsultasNoHistorico() {
+        when(autorizadorMock.autorizar(any())).thenReturn(true);
+
         calculadora.calcular(100, 0.5, new Paciente("João"));
         calculadora.calcular(200, 0.7, new Paciente("Maria"));
         List<Consulta> consultas = historicoConsultas.listarConsultas();
@@ -87,6 +123,8 @@ public class CalculadoraReembolsoTest {
 
     @Test
     public void deveRegistrarConsultaComPlano50() {
+        when(autorizadorMock.autorizar(any())).thenReturn(true);
+
         Paciente paciente = new Paciente("Lucas");
         PlanoSaude plano50 = new Plano50();
         calculadora.calcular(100, plano50, paciente);
@@ -98,6 +136,8 @@ public class CalculadoraReembolsoTest {
 
     @Test
     public void deveRegistrarConsultaComPlano80() {
+        when(autorizadorMock.autorizar(any())).thenReturn(true);
+
         Paciente paciente = new Paciente("Carla");
         PlanoSaude plano80 = new Plano80();
         calculadora.calcular(200, plano80, paciente);
@@ -120,6 +160,8 @@ public class CalculadoraReembolsoTest {
 
     @Test
     void deveRegistrarConsultaCorretamenteComPlano() {
+        when(autorizadorMock.autorizar(any())).thenReturn(true);
+
         Paciente paciente = new Paciente("Felipe");
         PlanoSaude plano50 = new Plano50();
         calculadora.calcular(150, plano50, paciente);
