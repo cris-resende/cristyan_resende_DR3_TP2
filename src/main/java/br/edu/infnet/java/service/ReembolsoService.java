@@ -10,7 +10,7 @@ public class ReembolsoService {
     private final CalculadoraReembolso calculadora;
 
     public ReembolsoService() {
-        this.calculadora = new CalculadoraReembolso();
+        this.calculadora = new CalculadoraReembolso(new HistoricoConsultasFake());
     }
 
     // Para facilitar testes, pode ser injetado um mock ou outra implementação:

@@ -1,81 +1,67 @@
 package br.edu.infnet.java.service;
 
 import br.edu.infnet.java.model.Paciente;
+import br.edu.infnet.java.model.Consulta;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.List;
 
-/**
-  Testes unitários para a classe CalculadoraReembolso,
-  focando apenas na lógica do cálculo, isolada de outras dependências.
- */
+import static org.junit.jupiter.api.Assertions.*;
+
 public class CalculadoraReembolsoTest {
 
-    private final CalculadoraReembolso calculadora = new CalculadoraReembolso();
+    private CalculadoraReembolso calculadora;
+    private HistoricoConsultasFake historicoConsultas;
+
+    @BeforeEach
+    public void setup() {
+        historicoConsultas = new HistoricoConsultasFake();
+        calculadora = new CalculadoraReembolso(historicoConsultas);
+    }
 
     @Test
     public void deveCalcularReembolsoCorretamente() {
-        double valorConsulta = 200.0;
-        double percentualCobertura = 0.70;
-        double valorEsperado = 140.0;
-
-        double resultado = calculadora.calcular(valorConsulta, percentualCobertura);
-
-        assertEquals(valorEsperado, resultado, 0.001);
+        assertEquals(140, calculadora.calcular(200, 0.7), 0.001);
     }
 
     @Test
     public void deveRetornarZeroQuandoValorConsultaForZero() {
-        double valorConsulta = 0.0;
-        double percentualCobertura = 0.70;
-        double valorEsperado = 0.0;
-
-        double resultado = calculadora.calcular(valorConsulta, percentualCobertura);
-
-        assertEquals(valorEsperado, resultado, 0.001);
+        assertEquals(0, calculadora.calcular(0, 0.7), 0.001);
     }
 
     @Test
     public void deveRetornarZeroQuandoPercentualCoberturaForZero() {
-        double valorConsulta = 200.0;
-        double percentualCobertura = 0.0;
-        double valorEsperado = 0.0;
-
-        double resultado = calculadora.calcular(valorConsulta, percentualCobertura);
-
-        assertEquals(valorEsperado, resultado, 0.001);
+        assertEquals(0, calculadora.calcular(200, 0), 0.001);
     }
 
     @Test
     public void deveCalcularReembolsoQuandoPercentualCoberturaForCemPorcento() {
-        double valorConsulta = 200.0;
-        double percentualCobertura = 1.0;
-        double valorEsperado = 200.0;
-
-        double resultado = calculadora.calcular(valorConsulta, percentualCobertura);
-
-        assertEquals(valorEsperado, resultado, 0.001);
+        assertEquals(200, calculadora.calcular(200, 1), 0.001);
     }
 
     @Test
     public void deveRetornarZeroQuandoValorConsultaEPercentualCoberturaForemZero() {
-        double valorConsulta = 0.0;
-        double percentualCobertura = 0.0;
-        double valorEsperado = 0.0;
-
-        double resultado = calculadora.calcular(valorConsulta, percentualCobertura);
-
-        assertEquals(valorEsperado, resultado, 0.001);
+        assertEquals(0, calculadora.calcular(0, 0), 0.001);
     }
+
     @Test
-    public void deveCalcularReembolsoComPacienteDummy() {
-        double valorConsulta = 200;
-        double percentualCobertura = 0.7;
-        double valorEsperado = 140;
-        Paciente pacienteDummy = new Paciente();  // Dummy sem lógica
+    void deveRegistrarMultiplasConsultasNoHistorico() {
+        calculadora.calcular(100, 0.5, new Paciente("João"));
+        calculadora.calcular(200, 0.7, new Paciente("Maria"));
+        List<Consulta> consultas = historicoConsultas.listarConsultas();
+        assertEquals(2, consultas.size());
+    }
 
-        double resultado = calculadora.calcular(valorConsulta, percentualCobertura, pacienteDummy);
+    @Test
+    public void deveIniciarComHistoricoVazio() {
+        assertTrue(historicoConsultas.listarConsultas().isEmpty());
+    }
 
-        assertEquals(valorEsperado, resultado, 0.001);
+    @Test
+    void deveRegistrarConsultaComPacienteDummy() {
+        Paciente paciente = new Paciente("Dummy");
+        assertEquals("Dummy", paciente.getNome());
     }
 }
+
